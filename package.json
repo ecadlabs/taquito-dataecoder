@@ -1,12 +1,16 @@
 {
   "name": "data-encoding",
   "version": "1.0.0",
-  "description": "TypeScript library for dealing with Tezos binary encoding",
+  "description": "A TypeScript library for dealing with Tezos binary encoding",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
     "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ecadlabs/taquito-dataencoder.git"
   },
   "author": "",
   "license": "Apache-2.0",

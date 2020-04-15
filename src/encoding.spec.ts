@@ -3,9 +3,8 @@ import { Writer } from "./writer";
 import { Reader } from "./reader";
 import { Encoder } from "./encoder";
 import { Decoder } from "./decoder";
-import { assert } from "chai";
-import "mocha";
 import { VarString } from "./helpers";
+import "jest-extended";
 
 class Uint8Test {
     @uint8 prop: number = 123;
@@ -66,8 +65,8 @@ describe("Atomics", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(Uint8Test);
-        assert.instanceOf(res, Uint8Test);
-        assert.deepEqual(res, inst);
+        expect(res).toBeInstanceOf(Uint8Test);
+        expect(res).toEqual(inst);
     });
     it("int8", () => {
         const w = new Writer();
@@ -75,9 +74,8 @@ describe("Atomics", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(Int8Test);
-        assert.instanceOf(res, Int8Test);
-        assert.deepEqual(res, inst);
-
+        expect(res).toBeInstanceOf(Int8Test);
+        expect(res).toEqual(inst);
     });
     it("uint16", () => {
         const w = new Writer();
@@ -85,8 +83,8 @@ describe("Atomics", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(Uint16Test);
-        assert.instanceOf(res, Uint16Test);
-        assert.deepEqual(res, inst);
+        expect(res).toBeInstanceOf(Uint16Test);
+        expect(res).toEqual(inst);
     });
     it("int16", () => {
         const w = new Writer();
@@ -94,8 +92,8 @@ describe("Atomics", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(Int16Test);
-        assert.instanceOf(res, Int16Test);
-        assert.deepEqual(res, inst);
+        expect(res).toBeInstanceOf(Int16Test);
+        expect(res).toEqual(inst);
     });
     it("uint32", () => {
         const w = new Writer();
@@ -103,8 +101,8 @@ describe("Atomics", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(Uint32Test);
-        assert.instanceOf(res, Uint32Test);
-        assert.deepEqual(res, inst);
+        expect(res).toBeInstanceOf(Uint32Test);
+        expect(res).toEqual(inst);
     });
     it("int32", () => {
         const w = new Writer();
@@ -112,8 +110,8 @@ describe("Atomics", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(Int32Test);
-        assert.instanceOf(res, Int32Test);
-        assert.deepEqual(res, inst);
+        expect(res).toBeInstanceOf(Int32Test);
+        expect(res).toEqual(inst);
     });
     it("uint64: Number", () => {
         const w = new Writer();
@@ -121,9 +119,9 @@ describe("Atomics", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(Uint64NumTest);
-        assert.instanceOf(res, Uint64NumTest);
-        assert.typeOf(res.prop, "number");
-        assert.deepEqual(res, inst);
+        expect(res).toBeInstanceOf(Uint64NumTest);
+        expect(res.prop).toBeNumber();
+        expect(res).toEqual(inst);
     });
     it("uint64: BigInt", () => {
         const w = new Writer();
@@ -131,9 +129,9 @@ describe("Atomics", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(Uint64BigTest);
-        assert.instanceOf(res, Uint64BigTest);
-        assert.typeOf(res.prop, "bigint");
-        assert.deepEqual(res, inst);
+        expect(res).toBeInstanceOf(Uint64BigTest);
+        expect(typeof res.prop).toBe("bigint");
+        expect(res).toEqual(inst);
     });
     it("bigInt", () => {
         const w = new Writer();
@@ -142,8 +140,8 @@ describe("Atomics", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(BigIntTest);
-        assert.instanceOf(res, BigIntTest);
-        assert.deepEqual(res, inst);
+        expect(res).toBeInstanceOf(BigIntTest);
+        expect(res).toEqual(inst);
     });
     it("bigUint", () => {
         const w = new Writer();
@@ -152,8 +150,8 @@ describe("Atomics", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(BigUintTest);
-        assert.instanceOf(res, BigUintTest);
-        assert.deepEqual(res, inst);
+        expect(res).toBeInstanceOf(BigUintTest);
+        expect(res).toEqual(inst);
     });
     it("str", () => {
         const w = new Writer();
@@ -161,8 +159,8 @@ describe("Atomics", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(StrTest);
-        assert.instanceOf(res, StrTest);
-        assert.deepEqual(res, inst);
+        expect(res).toBeInstanceOf(StrTest);
+        expect(res).toEqual(inst);
     });
     it("bytes: Number[]", () => {
         const w = new Writer();
@@ -170,8 +168,8 @@ describe("Atomics", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(BytesNumArrayTest);
-        assert.instanceOf(res, BytesNumArrayTest);
-        assert.deepEqual(res, inst);
+        expect(res).toBeInstanceOf(BytesNumArrayTest);
+        expect(res).toEqual(inst);
     });
     it("bytes: Uint8Array[]", () => {
         const w = new Writer();
@@ -179,8 +177,8 @@ describe("Atomics", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(BytesTypedArrayTest);
-        assert.instanceOf(res, BytesTypedArrayTest);
-        assert.deepEqual(res, inst);
+        expect(res).toBeInstanceOf(BytesTypedArrayTest);
+        expect(res).toEqual(inst);
     });
 });
 
@@ -228,8 +226,8 @@ describe("Complex", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(ElemUint32Test);
-        assert.instanceOf(res, ElemUint32Test);
-        assert.deepEqual(res, inst);
+        expect(res).toBeInstanceOf(ElemUint32Test);
+        expect(res).toEqual(inst);
     });
     it("elem: uint64", () => {
         const w = new Writer();
@@ -237,8 +235,8 @@ describe("Complex", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(ElemUint64Test);
-        assert.instanceOf(res, ElemUint64Test);
-        assert.deepEqual(res, inst);
+        expect(res).toBeInstanceOf(ElemUint64Test);
+        expect(res).toEqual(inst);
     });
     it("elem: VarString", () => {
         const w = new Writer();
@@ -246,8 +244,8 @@ describe("Complex", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(ElemStrTest);
-        assert.instanceOf(res, ElemStrTest);
-        assert.deepEqual(res, inst);
+        expect(res).toBeInstanceOf(ElemStrTest);
+        expect(res).toEqual(inst);
     });
     it("strEnum", () => {
         const w = new Writer();
@@ -255,8 +253,8 @@ describe("Complex", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(StrEnumTest);
-        assert.instanceOf(res, StrEnumTest);
-        assert.deepEqual(res, inst);
+        expect(res).toBeInstanceOf(StrEnumTest);
+        expect(res).toEqual(inst);
     });
     it("strEnum: Uint16", () => {
         const w = new Writer();
@@ -264,8 +262,8 @@ describe("Complex", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(StrEnumU16Test);
-        assert.instanceOf(res, StrEnumU16Test);
-        assert.deepEqual(res, inst);
+        expect(res).toBeInstanceOf(StrEnumU16Test);
+        expect(res).toEqual(inst);
     });
     it("union: string[]", () => {
         const w = new Writer();
@@ -274,8 +272,8 @@ describe("Complex", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(UnionTest);
-        assert.instanceOf(res, UnionTest);
-        assert.deepEqual(res, inst);
+        expect(res).toBeInstanceOf(UnionTest);
+        expect(res).toEqual(inst);
     });
     it("union: bigint", () => {
         const w = new Writer();
@@ -284,8 +282,8 @@ describe("Complex", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(UnionTest);
-        assert.instanceOf(res, UnionTest);
-        assert.deepEqual(res, inst);
+        expect(res).toBeInstanceOf(UnionTest);
+        expect(res).toEqual(inst);
     });
 });
 
@@ -318,8 +316,8 @@ describe("Modifiers", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(VariableTest);
-        assert.instanceOf(res, VariableTest);
-        assert.deepEqual(res, inst);
+        expect(res).toBeInstanceOf(VariableTest);
+        expect(res).toEqual(inst);
     });
     it("variable property", () => {
         const w = new Writer();
@@ -327,8 +325,8 @@ describe("Modifiers", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(VariablePropTest);
-        assert.instanceOf(res, VariablePropTest);
-        assert.deepEqual(res, inst);
+        expect(res).toBeInstanceOf(VariablePropTest);
+        expect(res).toEqual(inst);
     });
     it("fixed object", () => {
         const w = new Writer();
@@ -336,10 +334,10 @@ describe("Modifiers", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(FixedTest);
-        assert.instanceOf(res, FixedTest);
+        expect(res).toBeInstanceOf(FixedTest);
         const tmp = new FixedTest();
         tmp.prop = "aaa\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
-        assert.deepEqual(res, tmp);
+        expect(res).toEqual(tmp);
     });
     it("fixed property", () => {
         const w = new Writer();
@@ -347,10 +345,10 @@ describe("Modifiers", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(FixedPropTest);
-        assert.instanceOf(res, FixedPropTest);
+        expect(res).toBeInstanceOf(FixedPropTest);
         const tmp = new FixedPropTest();
         tmp.prop = "aaa\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
-        assert.deepEqual(res, tmp);
+        expect(res).toEqual(tmp);
     });
     it("optional: undefined", () => {
         const w = new Writer();
@@ -358,8 +356,8 @@ describe("Modifiers", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(OptionalTest);
-        assert.instanceOf(res, OptionalTest);
-        assert.deepEqual(res, inst);
+        expect(res).toBeInstanceOf(OptionalTest);
+        expect(res).toEqual(inst);
     });
     it("optional", () => {
         const w = new Writer();
@@ -368,7 +366,7 @@ describe("Modifiers", () => {
         new Encoder(w).marshal(inst);
         const r = new Reader(w.bytes);
         const res = new Decoder(r).unmarshal(OptionalTest);
-        assert.instanceOf(res, OptionalTest);
-        assert.deepEqual(res, inst);
+        expect(res).toBeInstanceOf(OptionalTest);
+        expect(res).toEqual(inst);
     });
 });

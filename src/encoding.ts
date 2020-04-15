@@ -183,6 +183,10 @@ const StringEncoding: Encoding<string> = {
     },
 };
 
+/**
+ * Returns default encoding for primitive type or undefined
+ * @param ctor A type designator
+ */
 export function defaultEncoding<T>(ctor: TypeDesignator<T>): Encoding<T> | undefined {
     let ret: Encoding | undefined;
     switch (<TypeDesignator>ctor) {
@@ -206,10 +210,39 @@ export function defaultEncoding<T>(ctor: TypeDesignator<T>): Encoding<T> | undef
 }
 
 // Class decorators
+
+/**
+ * Class annotated with this decorator will be deserialized by passing a reader instance into its constructor.
+ * See also {@link marshallable}
+ * @param target A class constructor
+ * ```typescript
+ * @unmarshallable
+ * class CustomEncoding {
+ *     constructor(r: ByteReader) {
+ *         // ...
+ *     }
+ * }
+ * ```
+ * @category Decorator
+ */
 export function unmarshallable(target: Unmarshallable<unknown>) {
     Reflect.defineMetadata("data-encoding:unmarshallable", true, target);
 }
 
+/**
+ * Class annotated with this decorator will be serialized using its {@link Marshallable} interface.
+ * See also {@link unmarshallable}
+ * @param target A class constructor
+ * ```typescript
+ * @marshallable
+ * class CustomEncoding implements Marshallable {
+ *     marshal(w: ByteWriter) {
+ *         // ...
+ *     }
+ * }
+ * ```
+ * @category Decorator
+ */
 export function marshallable(target: new () => Marshallable) {
     Reflect.defineMetadata("data-encoding:marshallable", true, target);
 }
@@ -226,6 +259,9 @@ function defineProperty(target: object, targetKey: string | symbol) {
 
 export type EncodingFactory = (next?: Encoding) => Encoding;
 
+/**
+ * A low level function. Add encoding to the chain stored in target's metadata.
+ */
 export function defineEncoding(factory: EncodingFactory, target: object, targetKey?: string | symbol) {
     let enc: Encoding | undefined;
     if (targetKey !== undefined) {
@@ -249,7 +285,9 @@ interface AtomicDecorator<T = any> extends Decorator<T> {
     __atomicPropertyType: T;
 }
 
-// Allow atomic numeric type decorators to be used as bigint typed decorators
+/**
+ * An encoding may be referred by {@link Encoding} interface or by atomic type decorator function (see examples).
+ */
 type EncodingDesignator<T = any> = (T extends bigint ? AtomicDecorator<T | number> : AtomicDecorator<T>) | Encoding<T>;
 
 function defineAtomic<T>(e: Encoding<T>): AtomicDecorator<T> {
@@ -257,18 +295,215 @@ function defineAtomic<T>(e: Encoding<T>): AtomicDecorator<T> {
     return <AtomicDecorator<T>>ret;
 }
 
+/**
+ * Use default encoding for a property of a primitive type
+ */
 export const auto = (target: object, targetKey: string | symbol) => defineProperty(target, targetKey);
+/**
+ * Encode a numeric property as Uint8
+ *
+ * ```typescript
+ * class T {
+ *     @uint8 prop?: number;
+ * }
+ * ```
+ *
+ * | Contents | Size |
+ * | -------- | ---- |
+ * | Value    | 1    |
+ *
+ * @category Decorator
+ */
 export const uint8 = defineAtomic(Uint8Encoding);
+/**
+ * Encode a numeric property as Int8
+ *
+ * ```typescript
+ * class T {
+ *     @int8 prop?: number;
+ * }
+ * ```
+ *
+ * | Contents | Size |
+ * | -------- | ---- |
+ * | Value    | 1    |
+ *
+ * @category Decorator
+ */
 export const int8 = defineAtomic(Int8Encoding);
+/**
+ * Encode a numeric property as Uint16
+ *
+ * ```typescript
+ * class T {
+ *     @uint16 prop?: number;
+ * }
+ * ```
+ *
+ * | Contents | Size |
+ * | -------- | ---- |
+ * | Value    | 2    |
+ *
+ * @category Decorator
+ */
 export const uint16 = defineAtomic(Uint16Encoding);
+/**
+ * Encode a numeric property as Int16
+ *
+ * ```typescript
+ * class T {
+ *     @int16 prop?: number;
+ * }
+ * ```
+ *
+ * | Contents | Size |
+ * | -------- | ---- |
+ * | Value    | 2    |
+ *
+ * @category Decorator
+ */
 export const int16 = defineAtomic(Int16Encoding);
+/**
+ * Encode a numeric property as Uint32
+ *
+ * ```typescript
+ * class T {
+ *     @uint32 prop?: number;
+ * }
+ * ```
+ *
+ * | Contents | Size |
+ * | -------- | ---- |
+ * | Value    | 4    |
+ *
+ * @category Decorator
+ */
 export const uint32 = defineAtomic(Uint32Encoding);
+/**
+ * Encode a numeric property as Int32
+ *
+ * ```typescript
+ * class T {
+ *     @int32 prop?: number;
+ * }
+ * ```
+ *
+ * | Contents | Size |
+ * | -------- | ---- |
+ * | Value    | 4    |
+ *
+ * @category Decorator
+ */
 export const int32 = defineAtomic(Int32Encoding);
+/**
+ * Encode a numeric property as Uint64
+ *
+ * ```typescript
+ * class T {
+ *     @uint64 prop0?: bigint;
+ *     @uint64 prop1?: number; // Also works
+ * }
+ * ```
+ *
+ * | Contents | Size |
+ * | -------- | ---- |
+ * | prop0    | 8    |
+ * | prop1    | 8    |
+ *
+ * @category Decorator
+ */
 export const uint64 = defineAtomic(Uint64Encoding);
+/**
+ * Encode a numeric property as Int64
+ *
+ * ```typescript
+ * class T {
+ *     @int64 prop0?: bigint;
+ *     @int64 prop1?: number; // Also works
+ * }
+ * ```
+ *
+ * | Contents | Size |
+ * | -------- | ---- |
+ * | prop0    | 8    |
+ * | prop1    | 8    |
+ *
+ * @category Decorator
+ */
 export const int64 = defineAtomic(Int64Encoding);
+/**
+ * Encode a string property as UTF-8 byte series.
+ * By default string will occupy the whole rest of the parent object.
+ * Usually should be wrapped with {@link variable} or {@link fixed} encoding.
+ *
+ * ```typescript
+ * class T {
+ *     @variable @str prop?: string;
+ * }
+ * ```
+ *
+ * | Contents | Size |
+ * | -------- | ---- |
+ * | Length | 4 |
+ * | Value | Variable |
+ *
+ * @category Decorator
+ */
 export const str = defineAtomic(StringEncoding);
+/**
+ * Encode a numeric array as a byte series
+ * By default byte array will occupy the whole rest of the parent object.
+ * Usually should be wrapped with {@link variable} or {@link fixed} encoding.
+ *
+ * ```typescript
+ * class T {
+ *     @variable @bytes prop0?: number[];
+ *     @variable @bytes prop1?: Uint8Array; // Also works
+ * }
+ * ```
+ *
+ * | Contents | Size |
+ * | -------- | ---- |
+ * | prop0 length | 4 |
+ * | prop0 value | Variable |
+ * | prop1 length | 4 |
+ * | prop1 value | Variable |
+ *
+ * @category Decorator
+ */
 export const bytes = defineAtomic(BytesEncoding);
+/**
+ * Encode a bigint property using unary encoding.
+ * The encoding contains end marker and usually should _not_ be wrapped with {@link variable} or {@link fixed}
+ * ```typescript
+ * class T {
+ *     @bigInt prop?: bigint;
+ * }
+ * ```
+ *
+ * | Contents | Size |
+ * | -------- | ---- |
+ * | Value | Variable |
+ *
+ * @category Decorator
+ */
 export const bigInt = defineAtomic(BigIntEncoding);
+/**
+ * Encode a bigint property using unary encoding.
+ * The encoding contains end marker and usually should _not_ be wrapped with {@link variable} or {@link fixed}
+ *
+ * ```typescript
+ * class T {
+ *     @bigUint prop?: bigint;
+ * }
+ * ```
+ *
+ * | Contents | Size |
+ * | -------- | ---- |
+ * | Value | Variable |
+ *
+ * @category Decorator
+ */
 export const bigUint = defineAtomic(BigUintEncoding);
 
 const atomics = new Map<AtomicDecorator, Encoding>([
@@ -297,6 +532,51 @@ function getEncoding<T>(e: EncodingDesignator<T>): Encoding<T> {
     return e;
 }
 
+/**
+ * Declare an array of identically typed elements.
+ * This is mandatory for array like properties since the element type is missing from the TypeScript runtime type information.
+ * @typeParam T An element type.
+ * @param td An element type designator.
+ * @param e An optional encoding to be applied to every item.
+ *
+ * ### Example 1
+ * ```typescript
+ * class T {
+ *     @variable @elem<number>(Number, uint32) prop?: number[];
+ * }
+ * ```
+ *
+ * | Contents | Size |
+ * | -------- | ---- |
+ * | Length | 4 |
+ * | Sequence of 4 byte elements | Variable |
+ *
+ * ### Example 2
+ * ```typescript
+ * class T {
+ *     @variable @elem<bigint>(BigInt, uint64) prop?: bigint[];
+ * }
+ * ```
+ *
+ * | Contents | Size |
+ * | -------- | ---- |
+ * | Length | 4 |
+ * | Sequence of 8 byte elements | Variable |
+ *
+ * ### Example 3
+ * ```typescript
+ * class T {
+ *     @variable @elem(VarString) prop?: VarString[];
+ * }
+ * ```
+ *
+ * | Contents | Size |
+ * | -------- | ---- |
+ * | Length | 4 |
+ * | Sequence of {@link VarString} | Variable |
+ *
+ * @category Decorator
+ */
 export function elem<T>(td: TypeDesignator<T>, e?: EncodingDesignator<T>): <TT extends { [key in KT]?: T[] }, KT extends string | symbol>(target: TT, targetKey: KT) => void {
     let enc: Encoding<T> | undefined;
     if (e !== undefined) {
@@ -357,6 +637,38 @@ function indexEncoding(codes: Iterable<number>): EncodingDesignator<number> {
     }
 }
 
+/**
+ * Union aka variant encoding. Numeric tag goes first followed by the actual data.
+ * @typeParam T Property type. Usually a union type (`A | B | ...`).
+ * @param u Type to tag mapping table.
+ * @param enc Numeric encoding to be used for tag record. Will be chosen automatically is omitted.
+ *
+ * ```typescript
+ * class T1 {
+ *     // ...
+ * }
+ *
+ * class T2 {
+ *     // ...
+ * }
+ *
+ * class UnionObject {
+ *     @union<T1 | T2 | number>([
+ *         [T1, 0],
+ *         [T2, 1],
+ *         [Number, [2, uint32]], // Atomic types are allowed too if they are unambiguous (type identifiers must be unique).
+ *     ])
+ *     prop?: T1 | T2 | number;
+ * }
+ * ```
+ *
+ * | Contents | Size |
+ * | -------- | ---- |
+ * | Tag | 1 |
+ * | Data | Variable |
+ *
+ * @category Decorator
+ */
 export function union<T>(u: Iterable<readonly [TypeDesignator<T>, number | [number, EncodingDesignator]]>, enc?: EncodingDesignator<number>): <TT extends { [key in KT]?: T }, KT extends string | symbol>(target: TT, targetKey: KT) => void {
     const tags = new Map<TypeDesignator<T>, number | [number, Encoding]>((function* (): Iterable<[TypeDesignator<T>, number | [number, Encoding]]> {
         for (const [k, v] of u) {
@@ -411,6 +723,27 @@ export function union<T>(u: Iterable<readonly [TypeDesignator<T>, number | [numb
     };
 }
 
+/**
+ * String enum encoding.
+ * @param en String constants to codes mapping table
+ * @param enc Numeric encoding to be used for code. Will be chosen automatically is omitted.
+ *
+ * ```typescript
+ * class Color {
+ *     @strEnum([
+ *         ["red", 0],
+ *         ["green", 1],
+ *         ["blue", 2],
+ *     ]) prop: "red" | "green" | "blue";
+ * }
+ * ```
+ *
+ * | Contents | Size |
+ * | -------- | ---- |
+ * | Value | 1 |
+ *
+ * @category Decorator
+ */
 export function strEnum<T extends string>(en: Iterable<readonly [T, number]>, enc?: EncodingDesignator<number>): <TT extends { [key in KT]?: T }, KT extends string | symbol>(target: TT, targetKey: KT) => void {
     const codes = new Map<string, number>(en);
     if (enc === undefined) {
@@ -445,7 +778,40 @@ export function strEnum<T extends string>(en: Iterable<readonly [T, number]>, en
 
 // Modifiers
 
-// Dynamically sized object
+/**
+ * Prefix object's data with 32 bit record containing its size. Can be used for properties as well as whole objects.
+ * ### Example 1
+ * ```typescript
+ * class T1 {
+ *     @variable @str str?: string;
+ *     @uint64 num?: bigint;
+ * }
+ * ```
+ *
+ * | Contents | Size |
+ * | -------- | ---- |
+ * | str length | 4 |
+ * | str data | Variable |
+ * | num | 8 |
+ *
+ * ### Example 2
+ * ```typescript
+ * @variable
+ * class T2 {
+ *     @variable @str str?: string;
+ *     @uint32 num?: number;
+ * }
+ * ```
+ *
+ * | Contents | Size |
+ * | -------- | ---- |
+ * | Total size of the following data | 4 |
+ * | str length | 4 |
+ * | str data | Variable |
+ * | num | 4 |
+ *
+ * @category Decorator
+ */
 export function variable(target: object, targetKey?: string | symbol) {
     const factory = (next?: Encoding) => {
         return {
@@ -484,7 +850,23 @@ export function variable(target: object, targetKey?: string | symbol) {
     defineEncoding(factory, target, targetKey);
 }
 
-// Object of a fixed size
+/**
+ * Always use specified amount of bytes for the object. Object's data will be truncated or padded by zeroes.
+ * Due to possible truncation it's usually unsafe to use this modifier with types other than strings and byte arrays.
+ * @param len A byte length
+ *
+ * ```typescript
+ * class T {
+ *     @fixed(64) @str str?: string;
+ * }
+ * ```
+ *
+ * | Contents | Size |
+ * | -------- | ---- |
+ * | Zero padded string | 64 |
+ *
+ * @category Decorator
+ */
 export function fixed(len: number): (target: object, targetKey?: string | symbol) => void {
     return (target: object, targetKey?: string | symbol) => {
         const factory = (next?: Encoding) => {
@@ -527,8 +909,30 @@ export function fixed(len: number): (target: object, targetKey?: string | symbol
     };
 }
 
-// Optional object
-export function optional(target: object, targetKey?: string | symbol) {
+/**
+ * An optional property. The first byte indicates the presence of the following data.
+ * Property is considered missing if it's undefined or null.
+ *
+ * ```typescript
+ * export class T {
+ *     @optional @uint64 num?: bigint;
+ * }
+ * ```
+ *
+ * ### num === undefined
+ * | Contents | Size |
+ * | -------- | ---- |
+ * | 0 | 1 |
+ *
+ * ### num !== undefined
+ * | Contents | Size |
+ * | -------- | ---- |
+ * | 255 | 1 |
+ * | num | 8 |
+ *
+ * @category Decorator
+ */
+export function optional(target: object, targetKey: string | symbol) {
     const factory = (next?: Encoding) => {
         return {
             marshal: (w: ByteWriter, value?: Object) => {

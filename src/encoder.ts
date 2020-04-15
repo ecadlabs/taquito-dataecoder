@@ -2,6 +2,24 @@ import { defaultEncoding } from "./encoding";
 import { Encoding, ByteWriter, Marshallable, TypeDesignator, Constructor } from "./types";
 import "reflect-metadata";
 
+/**
+ * Serialize objects into Tezos binary encoding using given writer instance.
+ *
+ * ```typescript
+ * import { Writer, Encoder } from "data-encoding";
+ *
+ * class T {
+ *     // ...
+ * }
+ *
+ * // ...
+ * const inst = new T();
+ * // ...
+ * const w = new Writer();
+ * new Encoder(w).marshal(inst);
+ * // Use w.bytes
+ * ```
+ */
 export class Encoder {
     constructor(private w: ByteWriter) {
     }
@@ -53,6 +71,11 @@ export class Encoder {
         this.marshal(val);
     }
 
+    /**
+     * A highest level encoding function. Serializes an object using writer instance used in construction.
+     * Uses {@link Encoder.marshalObject} internally.
+     * @param obj An object instance to serialize
+     */
     marshal(obj: Object) {
         const enc: Encoding | undefined = Reflect.getMetadata("data-encoding:encoding", obj.constructor);
         if (enc !== undefined) {
@@ -63,6 +86,11 @@ export class Encoder {
         this.marshalObject(obj);
     }
 
+    /**
+     * The same as {@link Encoder.marshal} but ignores class-level encoding information.
+     * Used in container encodings as a recursion entry point.
+     * @param obj An object instance to serialize
+     */
     marshalObject(obj: Object) {
         if (Reflect.getMetadata("data-encoding:marshallable", obj.constructor)) {
             (<Marshallable>obj).marshal(this.w);

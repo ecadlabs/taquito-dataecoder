@@ -1,5 +1,8 @@
 import { ByteWriter, LiteArray } from "./types";
 
+/**
+ * Handles the byte stream endianness.
+ */
 export class Writer implements ByteWriter {
     private buffer: number[] = [];
 

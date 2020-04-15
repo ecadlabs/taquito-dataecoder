@@ -2,18 +2,28 @@ import { ByteReader } from "./types";
 
 const boundsErr = new Error("bounds out of range");
 
+/**
+ * Handles the byte stream endianness.
+ */
 export class Reader implements ByteReader {
+    /**
+     * Class constructor
+     * @param buffer Byte array to read from
+     * @param idx Initial read pointer
+     * @param cap Maximum length
+     */
     constructor(private buffer: Uint8Array, private idx: number = 0, private cap: number = buffer.length) {
     }
 
+    /** Remaining length */
     get length(): number {
         return this.cap - this.idx;
     }
 
-    bytes(): Uint8Array {
-        return this.buffer.slice(this.idx);
-    }
-
+    /**
+     * Read byte array using `Uint8Array.silce` method
+     * @param len Optional length. Returns all remaining bytes if omitted.
+     */
     readBytes(len?: number): Uint8Array | null {
         const rem = this.cap - this.idx;
         if (len === undefined || len > rem) {
@@ -24,6 +34,10 @@ export class Reader implements ByteReader {
         return ret;
     }
 
+    /**
+     * Similar to {@link Reader.readBytes} but returns new `Reader` instance referring to the same buffer.
+     * @param len Optional length. Returns all remaining bytes if omitted.
+     */
     reader(len?: number): Reader {
         const rem = this.cap - this.idx;
         if (len === undefined || len > rem) {

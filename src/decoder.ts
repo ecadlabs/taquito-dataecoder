@@ -6,6 +6,21 @@ function isTypeDesignator<T>(arg: TypeDesignator<T> | T): arg is TypeDesignator<
     return typeof arg === "function";
 }
 
+/**
+ * Deserialize Tezos binary encoding using a given reader instance.
+ * ```typescript
+ * import { Reader, Decoder } from "data-encoding";
+ *
+ * class T {
+ *     // ...
+ * }
+ *
+ * // ...
+ * // Get a byte array
+ * const r = new Reader(bytes);
+ * const res = new Decoder(r).unmarshal(T);
+ * ```
+ */
 export class Decoder {
     constructor(private r: ByteReader) {
     }
@@ -37,6 +52,11 @@ export class Decoder {
         return;
     }
 
+    /**
+     * A highest level decoding function. Returns a newly decoded object with a given type designator.
+     * Uses {@link Decoder.unmarshalObject} internally.
+     * @param destType An output type constructor or an instance of array-like object
+     */
     unmarshal<T>(destType: TypeDesignator<T> | T): T {
         if (isTypeDesignator(destType)) {
             const enc: Encoding<T> | undefined = Reflect.getMetadata("data-encoding:encoding", destType);
@@ -48,6 +68,11 @@ export class Decoder {
         return this.unmarshalObject(destType);
     }
 
+    /**
+     * The same as {@link Decoder.unmarshal} but ignores class-level encoding information.
+     * Used in container encodings as a recursion entry point.
+     * @param destType An output type constructor or an instance of array-like object
+     */
     unmarshalObject<T>(destType: TypeDesignator<T> | T): T {
         let obj: T;
         if (isTypeDesignator(destType)) {

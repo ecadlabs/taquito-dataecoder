@@ -29,7 +29,7 @@ export class Decoder {
         const val: Object | undefined = (<any>obj)[prop];
         let td: TypeDesignator = Reflect.getMetadata("design:type", obj, prop);
         if (td === undefined) {
-            if (!val) {
+            if (val === undefined || val === null) {
                 throw new Error(`Encoding for property ${String(prop)} is not defined`);
             }
             td = <TypeDesignator>val.constructor;
@@ -46,10 +46,7 @@ export class Decoder {
             return enc.unmarshal(this.r, td);
         }
 
-        if (val !== undefined) {
-            return this.unmarshal(td);
-        }
-        return;
+        return this.unmarshal(td);
     }
 
     /**

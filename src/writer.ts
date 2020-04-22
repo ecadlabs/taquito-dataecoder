@@ -14,10 +14,6 @@ export class Writer implements ByteWriter {
         return this.buffer.length;
     }
 
-    reset() {
-        this.buffer = [];
-    }
-
     writeBytes(val: LiteArray<number>) {
         this.buffer.push(...val.map(v => v & 0xff));
     }

@@ -35,7 +35,9 @@ export class Encoder {
 
         let td: TypeDesignator = Reflect.getMetadata("design:type", obj, prop);
         if (td === undefined) {
+            /* istanbul ignore next */
             if (!val) {
+                // Need to switch `emitDecoratorMetadata` off to test
                 throw new Error(`Encoding for property ${String(prop)} is not defined`);
             }
             td = <TypeDesignator>val.constructor;
@@ -50,22 +52,18 @@ export class Encoder {
         }
 
         // We have type info but no encoding
-        if (!val) {
-            if (td === Array || td === Map || td === Object) {
-                return;
-            } else if (td === BigInt) {
-                val = BigInt(0);
-            } else {
-                // Try to construct it
-                try {
-                    val = new (<Constructor<Object>>td)();
-                } catch (e) {
-                    if (!(e instanceof TypeError)) {
-                        throw (e);
-                    }
-                    // Skip
-                    return;
+        if (val === undefined || val === null) {
+            // Try to construct it
+            try {
+                val = new (<Constructor<Object>>td)();
+            } catch (e) {
+                /* istanbul ignore next */
+                if (!(e instanceof TypeError)) {
+                    throw (e);
                 }
+                // Skip
+                /* istanbul ignore next */
+                return;
             }
         }
         this.marshal(val);

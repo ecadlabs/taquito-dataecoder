@@ -139,11 +139,7 @@ const BytesEncoding: Encoding<number[] | Uint8Array | Uint8ClampedArray> = {
         if (!value || value.length === 0) {
             return;
         }
-        if (Array.isArray(value) || value instanceof Uint8Array || value instanceof Uint8ClampedArray) {
-            w.writeBytes(value);
-            return;
-        }
-        throw new Error(`Wrong input value type for bytes encoding: ${value}`);
+        w.writeBytes(value);
     },
     unmarshal: (r: ByteReader, td?: TypeDesignator<number[] | Uint8Array | Uint8ClampedArray>) => {
         let bytes = r.readBytes();
@@ -154,10 +150,9 @@ const BytesEncoding: Encoding<number[] | Uint8Array | Uint8ClampedArray> = {
             return bytes;
         } else if (td === Uint8ClampedArray) {
             return new Uint8ClampedArray(bytes);
-        } else if (td === Array) {
+        } else {
             return Array.from(bytes);
         }
-        throw new Error(`Wrong output type for bytes encoding: ${td}`);
     },
 };
 
@@ -166,12 +161,8 @@ const StringEncoding: Encoding<string> = {
         if (!value || value.length === 0) {
             return;
         }
-        if (typeof value === "string") {
-            const utf8enc = new TextEncoder();
-            w.writeBytes(utf8enc.encode(value));
-            return;
-        }
-        throw new Error(`Value must be a string: ${value}`);
+        const utf8enc = new TextEncoder();
+        w.writeBytes(utf8enc.encode(value));
     },
     unmarshal: (r: ByteReader) => {
         const bytes = r.readBytes();
@@ -192,15 +183,19 @@ export function defaultEncoding<T>(ctor: TypeDesignator<T>): Encoding<T> | undef
     switch (<TypeDesignator>ctor) {
         case Number:
             ret = Int32Encoding;
+            break;
 
         case BigInt:
             ret = BigIntEncoding;
+            break;
 
         case Boolean:
             ret = BooleanEncoding;
+            break;
 
         case String:
             ret = StringEncoding;
+            break;
 
         case Uint8Array:
         case Uint8ClampedArray:
@@ -218,7 +213,7 @@ export function defaultEncoding<T>(ctor: TypeDesignator<T>): Encoding<T> | undef
  * ```typescript
  * @unmarshallable
  * class CustomEncoding {
- *     constructor(r: ByteReader) {
+ *     constructor(r?: ByteReader) {
  *         // ...
  *     }
  * }
@@ -432,6 +427,20 @@ export const uint64 = defineAtomic(Uint64Encoding);
  */
 export const int64 = defineAtomic(Int64Encoding);
 /**
+ * Boolean
+ *
+ * ```typescript
+ * class T {
+ *     @bool prop?: boolean;
+ * }
+ * ```
+ *
+ * | Contents | Size |
+ * | -------- | ---- |
+ * | Value    | 1    |
+ */
+export const bool = defineAtomic(BooleanEncoding);
+/**
  * Encode a string property as UTF-8 byte series.
  * By default string will occupy the whole rest of the parent object.
  * Usually should be wrapped with {@link variable} or {@link fixed} encoding.
@@ -515,6 +524,7 @@ const atomics = new Map<AtomicDecorator, Encoding>([
     [int32, Int32Encoding],
     [uint64, Uint64Encoding],
     [int64, Int64Encoding],
+    [bool, BooleanEncoding],
     [str, StringEncoding],
     [bytes, BytesEncoding],
     [bigInt, BigIntEncoding],
@@ -524,11 +534,13 @@ const atomics = new Map<AtomicDecorator, Encoding>([
 function getEncoding<T>(e: EncodingDesignator<T>): Encoding<T> {
     if (typeof e === "function") {
         const tmp = atomics.get(e);
+        /* istanbul ignore next */
         if (tmp === undefined) {
             throw new Error(`Unknown encoding ${e}`);
         }
         return <Encoding<T>>tmp;
     }
+    /* istanbul ignore next */
     return e;
 }
 
@@ -839,6 +851,7 @@ export function variable(target: object, targetKey?: string | symbol) {
                     return next.unmarshal(rd, td);
                 } else {
                     const dec = new Decoder(rd);
+                    /* istanbul ignore next */
                     if (td === undefined) {
                         throw new Error("Undefined destination type");
                     }
@@ -897,6 +910,7 @@ export function fixed(len: number): (target: object, targetKey?: string | symbol
                         return next.unmarshal(rd, td);
                     } else {
                         const dec = new Decoder(rd);
+                        /* istanbul ignore next */
                         if (td === undefined) {
                             throw new Error("Undefined destination type");
                         }
@@ -956,6 +970,7 @@ export function optional(target: object, targetKey: string | symbol) {
                 if (next !== undefined) {
                     return next.unmarshal(r, td);
                 } else {
+                    /* istanbul ignore next */
                     if (td === undefined) {
                         throw new Error("Undefined destination type");
                     }
